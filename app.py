@@ -3,6 +3,7 @@ from PIL import Image
 import os
 import tempfile
 from main import *
+from mongo import *
 
 # Streamlit app interface
 st.title("HealthKart Food Label Cataloging")
@@ -29,16 +30,19 @@ if uploaded_file is not None:
     cleaned_text = clean_ocr_text(detected_text)
     # st.write(cleaned_text)
     output = extract_nutrients(cleaned_text)
-  
+  # Convert the dictionary to a pandas DataFrame
+  df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
   # Display the extracted text
   st.write("Detected Nutrients :")
 
-  # Convert the dictionary to a pandas DataFrame
-#   st.write(output)
-  df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
-
   # Display the DataFrame as a table using Streamlit 
   st.table(df)
+  try:
+    insert_to_db(output, "HealthKart" , "Food Catelogs")
+    st.write("Data Inserted successfully")
+  except Exception as e:
+    print(f"An Error occured {e}")
+    st.error(e)
   
   # Clean up temporary file
   os.remove(temp_path)
