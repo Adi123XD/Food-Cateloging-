@@ -27,12 +27,14 @@ if uploaded_file is not None:
   with st.spinner('Detecting text...'):
     detected_text = detect_text(temp_path)
     cleaned_text = clean_ocr_text(detected_text)
+    # st.write(cleaned_text)
     output = extract_nutrients(cleaned_text)
   
   # Display the extracted text
   st.write("Detected Nutrients :")
 
   # Convert the dictionary to a pandas DataFrame
+#   st.write(output)
   df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
 
   # Display the DataFrame as a table using Streamlit 

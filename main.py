@@ -46,25 +46,29 @@ def extract_nutrients(text):
       "Total Sugars": r"Total Sugars\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
     #   "Added Sugars": r"Incl\.\s*(\d+)(?:g) Added Sugars",
       "Protein": r"Protein\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
-      "Potassium": r"Potassium\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
-      "Vitamin A": r"Vitamin A\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
+    #   "Potassium": r"Potassium\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
+      "Potassium": r"Potassium\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin A": r"Vitamin A\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin B6": r"Vitamin B6\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin B12": r"Vitamin B12\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin C": r"Vitamin C\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin D": r"Vitamin D\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin E": r"Vitamin E\s*([\d.]+)\s*(mg|g|mcg)?",
+      "Vitamin K": r"Vitamin K\s*([\d.]+)\s*(mg|g|mcg)?",
       "Calcium": r"Calcium\s*([a-zA-Z]|\d+)(g|mg|mcg)?",
       "Iron": r"Iron\s*([a-zA-Z]|\d+)(g|mg|mcg)?"
   }
   
-#   extracted_nutrients = {}
-#   for nutrient, pattern in nutrient_patterns.items():
-#     match = re.search(pattern, text)
-#     if match:
-#         extracted_nutrients[nutrient] = match.group(1)+match.group(2)
-#   return extracted_nutrients
   extracted_nutrients = {}
   for nutrient, pattern in nutrient_patterns.items():
       match = re.search(pattern, text, re.IGNORECASE)
       if match:
           value = match.group(1)
+          if (value =="O" or value =="o"):
+              value = 0
           unit = match.group(2) if match.group(2) else "g"  # Default unit to grams if not specified
           extracted_nutrients[nutrient] = f"{value} {unit}"
+        #   print(nutrient , value , unit )
   return extracted_nutrients
 
 
