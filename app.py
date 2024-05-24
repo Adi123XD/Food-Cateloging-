@@ -2,7 +2,8 @@ import streamlit as st
 from PIL import Image
 import os
 import tempfile
-from cloud_vision import detect_text
+from main import *
+
 # Streamlit app interface
 st.title("HealthKart Food Label Cataloging")
 
@@ -21,10 +22,11 @@ if uploaded_file is not None:
     # Perform OCR
     with st.spinner('Detecting text...'):
         detected_text = detect_text(temp_path)
+        output = generate_gemini_content(detected_text)
     
     # Display the extracted text
-    st.write("Detected Text:")
-    st.text(detected_text)
+    st.write("Detected Nutrients :")
+    st.text(output)
     
     # Clean up temporary file
     os.remove(temp_path)
