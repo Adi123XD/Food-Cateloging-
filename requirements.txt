@@ -1,2 +1,5 @@
 pymongo
-go
+google-cloud-vision
+streamlit 
+pandas 
+google-generativeai
