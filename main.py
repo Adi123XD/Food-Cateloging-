@@ -3,13 +3,9 @@ from google.cloud import vision,vision_v1
 from google.cloud.vision_v1 import types
 from importlib.resources import path
 import pandas as pd
-import google.generativeai as genai 
 from dotenv import load_dotenv
 load_dotenv()
 
-# load gemini model
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-pro")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe5246c.json'
 
 client = vision.ImageAnnotatorClient()
@@ -71,27 +67,6 @@ def extract_nutrients(text):
         #   print(nutrient , value , unit )
   return extracted_nutrients
 
-
-
-# def parse_nutrient_info_with_regex(cleaned_text):
-#     # Adjust the regex pattern to match the cleaned text structure
-#     pattern = r'([A-Za-z\s]+)\s*[:|]\s*([\d.]+\s*(?:mg|g|mcg|kcal|%|calories|cal|cup|servings|container|oz))'
-#     matches = re.findall(pattern, cleaned_text, re.IGNORECASE)
-    
-#     # If the pattern does not match, try a different approach
-#     if not matches:
-#         pattern = r'([A-Za-z\s]+)\s*([\d.]+\s*(?:mg|g|mcg|kcal|%|calories|cal|cup|servings|container|oz))'
-#         matches = re.findall(pattern, cleaned_text, re.IGNORECASE)
-    
-#     nutrients = {match[0].strip(): match[1].strip() for match in matches}
-#     return nutrients
-
-def create_dataframe(nutrients_dict):
-    df = pd.DataFrame(list(nutrients_dict.items()), columns=['Nutrient', 'Quantity'])
-    return df
-
-
-
 def detect_text(img_path):
     with io.open(img_path,"rb") as image_file:
         content = image_file.read()
@@ -102,11 +77,6 @@ def detect_text(img_path):
     for text in texts:
         output=output+ text.description
     return output
-
-def generate_gemini_content(ocr_text):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt =f'''You need to extraction all the nutrients present in the text and create a table containing the nutrient and its quantity the text is here : {ocr_text}'''
-    response = model.generate_content(prompt)
 
 # Example usage
 ocr_text = detect_text(r"data\label3.jpg")
