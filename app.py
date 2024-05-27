@@ -8,6 +8,7 @@ from mongo import *
 # Streamlit app interface
 st.title("HealthKart Food Label Cataloging")
 
+st.text_input("Product Name ...")
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -28,7 +29,7 @@ if uploaded_file is not None:
   with st.spinner('Detecting text...'):
     detected_text = detect_text(temp_path)
     cleaned_text = clean_ocr_text(detected_text)
-    # st.write(cleaned_text)
+    st.write(detected_text)
     output = extract_nutrients(cleaned_text)
   # Convert the dictionary to a pandas DataFrame
   df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
