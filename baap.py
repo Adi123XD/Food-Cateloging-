@@ -1,5 +1,6 @@
 import streamlit as st
-a ={ 
+import pandas as pd 
+data={ 
     "_id" : "ObjectId(5dea3e3528fdfeabbd8b1d46)", 
     "Cholesterol" : 0, 
     "addedSugar" : "0", "alternateName" : "bcaa, bcaa 6000, mb bcaa", 
@@ -26,4 +27,7 @@ a ={
     "applicable_for_diet" : "true", 
     "include_in_diet_chat" : "false"
     }
-st.table(a)
+df = pd.DataFrame(data)
+
+# Display the DataFrame as a Streamlit table
+st.write(df)
