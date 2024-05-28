@@ -52,27 +52,36 @@ def extract_nutrients(text):
           unit =None
           flag =0
           for i, group in enumerate(match.groups(), start=1):
-            print("matched ",nutrient , group)
-            if group and group.replace('.', '', 1).isdigit() and flag==0:
-                value = float(group)
-                print(nutrient , value)
-                flag =1
-            elif ( group and group.lower()=='o'):
-                value =0
-            elif group and group.lower()=='l':
-                value =1
-            elif group and group in ['g', 'mg', 'mcg','mog']:
-                unit = group
-            elif (unit is None and value is not None):
-                unit ='g'
-                if (int(value)%10==9 or int(value)%10 ==0):
-                    value = int(value)//10
+            if group:
+                if group.replace('.', '', 1).isdigit() and flag==0:
+                    value = float(group)
+                    # print(nutrient , value, unit)
+                    flag =1
+                elif ( group.lower()=='o'):
+                    value =0
+                    # print(nutrient , value , unit)
+                elif group.lower()=='l':
+                    value =1
+                    # print(nutrient , value , unit)
+                elif group in ['g', 'mg', 'mcg','mog']:
+                    unit = group
+                    # print(nutrient , value , unit)
+          if (unit is None and value is not None and (int(value)%10==9 or int(value)%10 ==0)):
+            unit ='g'
+            # print(nutrient , value , unit , end=" ")
+            value= str(int(value)//10)
           if (unit=="mg"):
+              # print(nutrient,"initial value ",value ,end=" ")
               value = value/1000
+              # print("new value ",value)
               unit ="g"
           elif unit =="mcg" or unit =="mog":
+            #   print(nutrient,"initial value", value,end=" ")
               value= value/1000000
+            #   print("new value",value)
               unit ="g"
+          elif unit is None :
+            unit = 'g'
           if value is not None :
               extracted_nutrients[nutrient] = f"{value} {unit}"
   return extracted_nutrients
