@@ -42,8 +42,12 @@ if uploaded_file is not None:
   # Display the DataFrame as a table using Streamlit 
   st.table(df)
   try:
-    insert_to_db(output, "HealthKart" , "Food Catelogs")
-    st.write("Data Inserted successfully")
+      skip_entry = all(value =="0.0 g" for value in output.values())
+      if (not skip_entry):
+          insert_to_db(output, "HealthKart" , "Food Catelogs")
+          st.write("Data Inserted successfully")
+      else:
+          st.error("Image was too blurry")  
   except Exception as e:
     print(f"An Error occured {e}")
     st.error(e)

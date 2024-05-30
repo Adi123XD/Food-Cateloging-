@@ -22,6 +22,8 @@ def clean_with_gemini(ocr_text):
     i want you to clean this text and correct all the spellings and return the paragraph'''
     response = model.generate_content(prompt)
     return response.text
+
+
 def clean_ocr_text(ocr_text):
     # Remove non-informative lines and whitespace
     lines = ocr_text.split('\n')
@@ -38,58 +40,89 @@ def extract_nutrients(text):
     for nutrient, pattern in nutrient_patterns.items():
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            #   #print("matched ",nutrient)
+            print("matched ",nutrient)
             value=None 
             unit =None
             flag =0
-            #print("matched", nutrient , match.groups())
+            print("matched", nutrient , match.groups())
             for i, group in enumerate(match.groups(), start=1):
-                #print(nutrient , group)
+                print(nutrient , group)
                 if group:
                     if group.replace('.', '', 1).isdigit() and flag==0:
                         value = float(group)
-                        #print(nutrient , "value = ",value, unit)
+                        print(nutrient , "value = ",value, unit)
                         flag =1
                     elif ( group.lower()=='o'):
                         value =0
-                        #print(nutrient , "value = ",value, unit)
+                        print(nutrient , "value = ",value, unit)
                     elif group.lower()=='l':
                         value =1
-                        #print(nutrient , "value = ",value, unit)
+                        print(nutrient , "value = ",value, unit)
                     elif group in ['g', 'mg', 'mcg','mog','µg']:
                         unit = group
-                        #print(nutrient , "value = ",value, unit)
+                        print(nutrient , "value = ",value, unit)
                     elif group in ['%']:
-                        #print(nutrient , "value = ",value, unit,end=" ")
+                        print(nutrient , "value = ",value, unit,end=" ")
                         value=None
-                        #print(nutrient , "value = ",value, unit)
+                        print(nutrient , "value = ",value, unit)
                         continue
             if (unit is None and value is not None and (int(value)%10==9 or int(value)%10 ==0) and value==int(value)):
                 unit ='g'
-                #print(nutrient , "value = ",value, unit) 
+                print(nutrient , "value = ",value, unit) 
                 value= str(int(value)//10)
             if (unit=="mg"):
-                #print(nutrient,"initial value ",value ,end=" ")
+                print(nutrient,"initial value ",value ,end=" ")
                 value = value/1000
-                #print("new value ",value)
+                print("new value ",value)
                 unit ="g"
             elif unit =="mcg" or unit =="mog" or unit =='µg':
-                #print(nutrient,"initial value", value,end=" ")
+                print(nutrient,"initial value", value,end=" ")
                 value= value/1000000
-                #print("new value",value)
+                print("new value",value)
                 unit ="g"
             elif unit is None :
                 unit = 'g'
             if value is not None :
-                #print("before adding the data ",nutrient, value , unit )
+                print("before adding the data ",nutrient, value , unit )
                 extracted_nutrients[nutrient] = f"{value} {unit}"
-    for incorrect_nutrient, correct_nutrient in nutrient_correction.items():
-        if incorrect_nutrient in extracted_nutrients:
-            # If the incorrect nutrient is found, replace it with the correct one
-            extracted_nutrients[correct_nutrient] = extracted_nutrients.pop(incorrect_nutrient)
+    for key , value in extracted_nutrients.items():
+        print(key , value)
+    # for incorrect_nutrient, correct_nutrient in nutrient_correction.items():
+    #     if incorrect_nutrient in extracted_nutrients:
+    #         # If the incorrect nutrient is found, replace it with the correct one
+    #         value = extracted_nutrients.get(incorrect_nutrient)
+    #         if value is None or value =='0 g' or value =='0.0 g':
+    #             extracted_nutrients.pop(incorrect_nutrient)
+    #         else:
+    #             value = extracted_nutrients.get(correct_nutrient)
+    #             if value is not None :
+    #                 extracted_nutrients.pop(incorrect_nutrient)
+    #             else:
+    #                 extracted_nutrients[correct_nutrient] = extracted_nutrients[incorrect_nutrient]
+    #                 extracted_nutrients.pop(incorrect_nutrient)
+    #             pass
+            
+            
+            
+            
+            
+            
+            # many times correct and incorrect both may match so remove the incorrect and keep the correct
+            # one in that case
+            # if value is not None :
+            #     extracted_nutrients.pop(incorrect_nutrient)
+            # else:
+            #     extracted_nutrients[correct_nutrient] = extracted_nutrients[incorrect_nutrient]
+            #     extracted_nutrients.pop(incorrect_nutrient)
+    print("after corrections")
+    for key , value in extracted_nutrients.items():
+        print(key , value)
     for nutrient in nutrients:
         if nutrient not in extracted_nutrients:
             extracted_nutrients[nutrient] = "0.0 g"
+    # print("part 2")
+    # for key , value in extracted_nutrients.items():
+    #     #print(key , value)
     return extracted_nutrients
 
 def detect_text(img_path):
@@ -103,13 +136,13 @@ def detect_text(img_path):
         output=output+ text.description
     return output
 
-# # Example usage
-# ocr_text = detect_text(r"data\label3.jpg")
-# # #print("OCR Text Output:\n", ocr_text)  # #print the raw OCR text output for inspection
+# Example usage
+ocr_text = detect_text(r"demo_data\label 9.jpg")
+# print("OCR Text Output:\n", ocr_text)  # print the raw OCR text output for inspection
 
-# cleaned_text = clean_ocr_text(ocr_text)
-# #print("\nCleaned Text:\n", cleaned_text)  # #print the cleaned text for inspection
-# #print(extract_nutrients(cleaned_text))
+cleaned_text = clean_ocr_text(ocr_text)
+# print("\nCleaned Text:\n", cleaned_text)  # print the cleaned text for inspection
+print(extract_nutrients(cleaned_text))
 
 
 
