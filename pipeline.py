@@ -7,6 +7,7 @@ from mongo import *
 labels =os.listdir('data')
 print(labels)
 for label in labels :
+    print("extracting information for ",label)
     label_images_path= os.listdir(os.path.join('data',label))
     for label_image_path in label_images_path:
         try:

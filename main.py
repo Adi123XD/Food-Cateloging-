@@ -3,13 +3,25 @@ from google.cloud import vision,vision_v1
 from google.cloud.vision_v1 import types
 from importlib.resources import path
 import pandas as pd
+from constants import *
+import google.generativeai as genai
 from dotenv import load_dotenv
 load_dotenv()
+
+
+# load the model
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel("gemini-pro")
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe5246c.json'
 
 client = vision.ImageAnnotatorClient()
 
+def clean_with_gemini(ocr_text):
+    prompt =f'''This is the ocr_text {ocr_text}
+    i want you to clean this text and correct all the spellings and return the paragraph'''
+    response = model.generate_content(prompt)
+    return response.text
 def clean_ocr_text(ocr_text):
     # Remove non-informative lines and whitespace
     lines = ocr_text.split('\n')
@@ -21,70 +33,64 @@ def clean_ocr_text(ocr_text):
 
 def extract_nutrients(text):
   # Define regular expressions for different nutrients
-  nutrient_patterns = {
-      "Total Fat": r"Total Fat\s*(\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Saturated Fat": r"Saturated Fat\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Trans Fat": r"Trans Fat\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Cholesterol": r"Cholesterol\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Sodium": r"Sodium\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Dietary Fiber": r"Dietary Fiber\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Total Carbohydrate": r"(Total\s)?Carbohydrates?\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Total Sugars": r"Total Sugars\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Protein": r"Protein\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Potassium": r"Potassium\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin A": r"Vitamin A\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin B6": r"Vitamin B6\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin B12": r"Vitamin B12\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin C": r"Vitamin C\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin D": r"Vitamin D\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin E": r"Vitamin E\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Vitamin K": r"Vitamin K\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Calcium": r"Calcium\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?",
-      "Iron": r"Iron\s*([a-zA-Z]|\d+(\.\d+)?)(g|mg|mcg|mog)?"
-  }
-  
-  extracted_nutrients = {}
-  for nutrient, pattern in nutrient_patterns.items():
-      match = re.search(pattern, text, re.IGNORECASE)
-      if match:
-        #   print("matched ",nutrient)
-          value=None 
-          unit =None
-          flag =0
-          for i, group in enumerate(match.groups(), start=1):
-            if group:
-                if group.replace('.', '', 1).isdigit() and flag==0:
-                    value = float(group)
-                    # print(nutrient , value, unit)
-                    flag =1
-                elif ( group.lower()=='o'):
-                    value =0
-                    # print(nutrient , value , unit)
-                elif group.lower()=='l':
-                    value =1
-                    # print(nutrient , value , unit)
-                elif group in ['g', 'mg', 'mcg','mog']:
-                    unit = group
-                    # print(nutrient , value , unit)
-          if (unit is None and value is not None and (int(value)%10==9 or int(value)%10 ==0)):
-            unit ='g'
-            # print(nutrient , value , unit , end=" ")
-            value= str(int(value)//10)
-          if (unit=="mg"):
-              # print(nutrient,"initial value ",value ,end=" ")
-              value = value/1000
-              # print("new value ",value)
-              unit ="g"
-          elif unit =="mcg" or unit =="mog":
-            #   print(nutrient,"initial value", value,end=" ")
-              value= value/1000000
-            #   print("new value",value)
-              unit ="g"
-          elif unit is None :
-            unit = 'g'
-          if value is not None :
-              extracted_nutrients[nutrient] = f"{value} {unit}"
-  return extracted_nutrients
+
+    extracted_nutrients = {}
+    for nutrient, pattern in nutrient_patterns.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            #   #print("matched ",nutrient)
+            value=None 
+            unit =None
+            flag =0
+            #print("matched", nutrient , match.groups())
+            for i, group in enumerate(match.groups(), start=1):
+                #print(nutrient , group)
+                if group:
+                    if group.replace('.', '', 1).isdigit() and flag==0:
+                        value = float(group)
+                        #print(nutrient , "value = ",value, unit)
+                        flag =1
+                    elif ( group.lower()=='o'):
+                        value =0
+                        #print(nutrient , "value = ",value, unit)
+                    elif group.lower()=='l':
+                        value =1
+                        #print(nutrient , "value = ",value, unit)
+                    elif group in ['g', 'mg', 'mcg','mog','µg']:
+                        unit = group
+                        #print(nutrient , "value = ",value, unit)
+                    elif group in ['%']:
+                        #print(nutrient , "value = ",value, unit,end=" ")
+                        value=None
+                        #print(nutrient , "value = ",value, unit)
+                        continue
+            if (unit is None and value is not None and (int(value)%10==9 or int(value)%10 ==0) and value==int(value)):
+                unit ='g'
+                #print(nutrient , "value = ",value, unit) 
+                value= str(int(value)//10)
+            if (unit=="mg"):
+                #print(nutrient,"initial value ",value ,end=" ")
+                value = value/1000
+                #print("new value ",value)
+                unit ="g"
+            elif unit =="mcg" or unit =="mog" or unit =='µg':
+                #print(nutrient,"initial value", value,end=" ")
+                value= value/1000000
+                #print("new value",value)
+                unit ="g"
+            elif unit is None :
+                unit = 'g'
+            if value is not None :
+                #print("before adding the data ",nutrient, value , unit )
+                extracted_nutrients[nutrient] = f"{value} {unit}"
+    for incorrect_nutrient, correct_nutrient in nutrient_correction.items():
+        if incorrect_nutrient in extracted_nutrients:
+            # If the incorrect nutrient is found, replace it with the correct one
+            extracted_nutrients[correct_nutrient] = extracted_nutrients.pop(incorrect_nutrient)
+    for nutrient in nutrients:
+        if nutrient not in extracted_nutrients:
+            extracted_nutrients[nutrient] = "0.0 g"
+    return extracted_nutrients
 
 def detect_text(img_path):
     with io.open(img_path,"rb") as image_file:
@@ -99,11 +105,11 @@ def detect_text(img_path):
 
 # # Example usage
 # ocr_text = detect_text(r"data\label3.jpg")
-# # print("OCR Text Output:\n", ocr_text)  # Print the raw OCR text output for inspection
+# # #print("OCR Text Output:\n", ocr_text)  # #print the raw OCR text output for inspection
 
 # cleaned_text = clean_ocr_text(ocr_text)
-# print("\nCleaned Text:\n", cleaned_text)  # Print the cleaned text for inspection
-# print(extract_nutrients(cleaned_text))
+# #print("\nCleaned Text:\n", cleaned_text)  # #print the cleaned text for inspection
+# #print(extract_nutrients(cleaned_text))
 
 
 

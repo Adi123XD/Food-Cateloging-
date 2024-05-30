@@ -18,6 +18,8 @@ if uploaded_file is not None:
   # Display the uploaded image
   image = Image.open(uploaded_file)
   st.image(image, caption='Uploaded Image', use_column_width=True)
+  # Convert the image to RGB mode
+  image = image.convert("RGB")
   
   # Save the uploaded image to a temporary file
   with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
@@ -29,7 +31,8 @@ if uploaded_file is not None:
   with st.spinner('Detecting text...'):
     detected_text = detect_text(temp_path)
     cleaned_text = clean_ocr_text(detected_text)
-    st.write(detected_text)
+    # cleaned_text = clean_with_gemini(detected_text)
+    st.write(cleaned_text)
     output = extract_nutrients(cleaned_text)
   # Convert the dictionary to a pandas DataFrame
   df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
