@@ -17,9 +17,10 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe524
 
 client = vision.ImageAnnotatorClient()
 
-def clean_with_gemini(ocr_text):
-    prompt =f'''This is the ocr_text {ocr_text}
-    i want you to clean this text and correct all the spellings and return the paragraph'''
+def healthy_unhealthy(ocr_text):
+    prompt =f'''{ocr_text}
+    
+    is this food healthy or unhealthy? answer in a single word'''
     response = model.generate_content(prompt)
     return response.text
 
@@ -76,9 +77,9 @@ def extract_nutrients(text):
                 print("new value ",value)
                 unit ="g"
             elif unit =="mcg" or unit =="mog" or unit =='µg':
-                print(nutrient,"initial value", value,end=" ")
+                # print(nutrient,"initial value", value,end=" ")
                 value= value/1000000
-                print("new value",value)
+                # print("new value",value)
                 unit ="g"
             elif unit is None :
                 unit = 'g'
@@ -87,6 +88,10 @@ def extract_nutrients(text):
                 extracted_nutrients[nutrient] = f"{value} {unit}"
     for key , value in extracted_nutrients.items():
         print(key , value)
+        
+    for incorrect_nutrient,correct_nutrient in nutrient_correction.items():
+        if incorrect_nutrient in extracted_nutrients.keys():
+            extracted_nutrients[correct_nutrient]=extracted_nutrients.pop(incorrect_nutrient)
     # for incorrect_nutrient, correct_nutrient in nutrient_correction.items():
     #     if incorrect_nutrient in extracted_nutrients:
     #         # If the incorrect nutrient is found, replace it with the correct one
@@ -107,13 +112,13 @@ def extract_nutrients(text):
             
             
             
-            # many times correct and incorrect both may match so remove the incorrect and keep the correct
-            # one in that case
-            # if value is not None :
-            #     extracted_nutrients.pop(incorrect_nutrient)
-            # else:
-            #     extracted_nutrients[correct_nutrient] = extracted_nutrients[incorrect_nutrient]
-            #     extracted_nutrients.pop(incorrect_nutrient)
+    #         # many times correct and incorrect both may match so remove the incorrect and keep the correct
+    #         # one in that case
+    #         if value is not None :
+    #             extracted_nutrients.pop(incorrect_nutrient)
+    #         else:
+    #             extracted_nutrients[correct_nutrient] = extracted_nutrients[incorrect_nutrient]
+    #             extracted_nutrients.pop(incorrect_nutrient)
     print("after corrections")
     for key , value in extracted_nutrients.items():
         print(key , value)
@@ -134,6 +139,7 @@ def detect_text(img_path):
     output =""
     for text in texts:
         output=output+ text.description
+    output=output.lower()
     return output
 
 # Example usage

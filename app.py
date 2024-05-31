@@ -6,6 +6,7 @@ from main import *
 from mongo import *
 
 # Streamlit app interface
+healthy =""
 st.title("HealthKart Food Label Cataloging")
 
 st.text_input("Product Name ...")
@@ -31,9 +32,13 @@ if uploaded_file is not None:
   with st.spinner('Detecting text...'):
     detected_text = detect_text(temp_path)
     cleaned_text = clean_ocr_text(detected_text)
+    # if(healthy_unhealthy(cleaned_text)):
+    #   healthy="healthy"
+    # else:
+    #   healthy="unhealthy"     
     # cleaned_text = clean_with_gemini(detected_text)
-    st.write(cleaned_text)
-    output = extract_nutrients(cleaned_text)
+    st.write(detected_text)
+    output = extract_nutrients(detected_text)
   # Convert the dictionary to a pandas DataFrame
   df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
   # Display the extracted text
@@ -41,6 +46,7 @@ if uploaded_file is not None:
 
   # Display the DataFrame as a table using Streamlit 
   st.table(df)
+  st.write(f'This food is {healthy_unhealthy(cleaned_text)} for you')
   try:
       skip_entry = all(value =="0.0 g" for value in output.values())
       if (not skip_entry):
