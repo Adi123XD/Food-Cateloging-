@@ -1,62 +1,46 @@
-import streamlit as st
-from PIL import Image
-import os
-import tempfile
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import werkzeug
+import werkzeug.utils
 from main import *
-from mongo import *
+import os 
 
-# Streamlit app interface
-healthy =""
-st.title("HealthKart Food Label Cataloging")
+app = Flask(__name__)
+CORS(app)
+port =8000
 
-st.text_input("Product Name ...")
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# Create upload folder if it doesn't exist
+UPLOAD_FOLDER = './uploaded_images/'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-if uploaded_file is not None:
-  # Clear previous data (optional)
-  st.empty()
 
-  # Display the uploaded image
-  image = Image.open(uploaded_file)
-  st.image(image, caption='Uploaded Image', use_column_width=True)
-  # Convert the image to RGB mode
-  image = image.convert("RGB")
-  
-  # Save the uploaded image to a temporary file
-  with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-    image.save(temp_file, format="JPEG")
-    temp_path = temp_file.name
-    # st.write(temp_path)
-  
-  # Perform OCR
-  with st.spinner('Detecting text...'):
-    detected_text = detect_text(temp_path)
-    cleaned_text = clean_ocr_text(detected_text)
-    # if(healthy_unhealthy(cleaned_text)):
-    #   healthy="healthy"
-    # else:
-    #   healthy="unhealthy"     
-    # cleaned_text = clean_with_gemini(detected_text)
-    st.write(detected_text)
-    output = extract_nutrients(detected_text)
-  # Convert the dictionary to a pandas DataFrame
-  df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
-  # Display the extracted text
-  st.write("Detected Nutrients :")
+@app.route('/api/message', methods=['GET'])
+def get_message():
+    return jsonify({"message": "Backend will be built soon"})
 
-  # Display the DataFrame as a table using Streamlit 
-  st.table(df)
-  st.write(f'This food is {healthy_unhealthy(cleaned_text)} for you')
-  try:
-      skip_entry = all(value =="0.0 g" for value in output.values())
-      if (not skip_entry):
-          insert_to_db(output, "HealthKart" , "Food Catelogs")
-          st.write("Data Inserted successfully")
-      else:
-          st.error("Image was too blurry")  
-  except Exception as e:
-    print(f"An Error occured {e}")
-    st.error(e)
-  
-  # Clean up temporary file
-  os.remove(temp_path)
+@app.route('/api/upload_image',methods=['POST'])
+def get_image_content():
+    if (request.method=="POST"):
+        imagefile = request.files['image']
+        filename = werkzeug.utils.secure_filename(imagefile.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        imagefile.save(filepath)
+        detected_text = detect_text(filepath)
+        cleaned_text = clean_ocr_text(detected_text)
+        output = extract_nutrients(detected_text)
+        df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
+        if(cleaned_text !=""):
+            return jsonify({
+                "message":cleaned_text,
+                "nutrients":df.to_dict(orient='records'),
+            })
+        else :
+            return jsonify({
+                "message":"Could not extract any text",
+                "nutrients":None,
+            })
+
+if __name__ == '__main__':
+    print(f"Server is listening to http://127.0.0.1:{port}")
+    app.run(debug=True, port=port)

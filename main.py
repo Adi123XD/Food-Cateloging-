@@ -59,7 +59,7 @@ def extract_nutrients(text):
                     elif group.lower()=='l':
                         value =1
                         print(nutrient , "value = ",value, unit)
-                    elif group in ['g', 'mg', 'mcg','mog','µg']:
+                    elif group in ['g', 'mg', 'mcg','mog','µg','ml']:
                         unit = group
                         print(nutrient , "value = ",value, unit)
                     elif group in ['%']:
@@ -143,12 +143,12 @@ def detect_text(img_path):
     return output
 
 # Example usage
-ocr_text = detect_text(r"demo_data\label 9.jpg")
+# ocr_text = detect_text(r"demo_data\label 9.jpg")
 # print("OCR Text Output:\n", ocr_text)  # print the raw OCR text output for inspection
 
-cleaned_text = clean_ocr_text(ocr_text)
+# cleaned_text = clean_ocr_text(ocr_text)
 # print("\nCleaned Text:\n", cleaned_text)  # print the cleaned text for inspection
-print(extract_nutrients(cleaned_text))
+# print(extract_nutrients(cleaned_text))
 
 
 
