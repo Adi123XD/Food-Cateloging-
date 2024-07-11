@@ -6,6 +6,10 @@ import pandas as pd
 from constants import *
 import google.generativeai as genai
 from dotenv import load_dotenv
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+import string 
 load_dotenv()
 
 
@@ -13,7 +17,8 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-pro")
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe5246c.json'
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe5246c.json'
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-f5f83b608349.json'
 
 client = vision.ImageAnnotatorClient()
 
@@ -25,14 +30,36 @@ def healthy_unhealthy(ocr_text):
     return response.text
 
 
-def clean_ocr_text(ocr_text):
-    # Remove non-informative lines and whitespace
-    lines = ocr_text.split('\n')
-    cleaned_lines = []
-    for line in lines:
-        if line.strip() and not re.match(r'^\d+\s*$', line):
-            cleaned_lines.append(line.strip())
-    return " ".join(cleaned_lines)
+def adjust_nutrient_values(output,serving_size):
+    for key, value in output.items():
+        if key not in ["original_image_link","Serving Size"] and isinstance(value, str):
+            nutrient_value = float(value.split()[0])
+            # unit_value =value.split()[1]
+            adjusted_value = nutrient_value * (serving_size / 100)
+            output[key] = f"{round(adjusted_value, 2)} "
+    return output
+    
+    
+def clean_ocr_text(text):
+    # Tokenize the text into words
+    tokens = word_tokenize(text)
+    
+    # Define allowed characters (alphanumeric, spaces, parentheses, and period)
+    allowed_chars = set(string.ascii_letters + string.digits + '() .')
+    
+    # Remove punctuation and special characters from each token except parentheses and period
+    tokens = [''.join(e for e in token if e in allowed_chars) for token in tokens]
+    
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token.lower() not in stop_words]
+    
+    # Remove empty tokens
+    tokens = [token for token in tokens if token.strip()]
+    
+    # Join the cleaned tokens back into a string
+    cleaned_text = ' '.join(tokens)
+    return cleaned_text
 
 def extract_nutrients(text):
   # Define regular expressions for different nutrients
@@ -49,6 +76,7 @@ def extract_nutrients(text):
             for i, group in enumerate(match.groups(), start=1):
                 print(nutrient , group)
                 if group:
+                    group = group.strip()
                     if group.replace('.', '', 1).isdigit() and flag==0:
                         value = float(group)
                         print(nutrient , "value = ",value, unit)
@@ -68,19 +96,21 @@ def extract_nutrients(text):
                         print(nutrient , "value = ",value, unit)
                         continue
             if (unit is None and value is not None and (int(value)%10==9 or int(value)%10 ==0) and value==int(value)):
-                unit ='g'
+                # unit ='g'
                 print(nutrient , "value = ",value, unit) 
                 value= str(int(value)//10)
-            if (unit=="mg"):
-                print(nutrient,"initial value ",value ,end=" ")
-                value = value/1000
-                print("new value ",value)
-                unit ="g"
-            elif unit =="mcg" or unit =="mog" or unit =='µg':
-                # print(nutrient,"initial value", value,end=" ")
-                value= value/1000000
-                # print("new value",value)
-                unit ="g"
+            if(unit is not None and value is None):
+                value=0
+            # if (unit=="mg"):
+            #     print(nutrient,"initial value ",value ,end=" ")
+            #     value = value/1000
+            #     print("new value ",value)
+            #     unit ="g"
+            # elif unit =="mcg" or unit =="mog" or unit =='µg':
+            #     # print(nutrient,"initial value", value,end=" ")
+            #     value= value/1000000
+            #     # print("new value",value)
+            #     unit ="g"
             elif unit is None :
                 unit = 'g'
             if value is not None :
