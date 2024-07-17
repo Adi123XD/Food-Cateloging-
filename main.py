@@ -32,11 +32,12 @@ def healthy_unhealthy(ocr_text):
 
 def adjust_nutrient_values(output,serving_size):
     for key, value in output.items():
-        if key not in ["original_image_link","Serving Size"] and isinstance(value, str):
+        if key not in ["original_image_link","servingSize","servingUnit"] and isinstance(value, str):
             nutrient_value = float(value.split()[0])
+            unit_value = value.split()[1]
             # unit_value =value.split()[1]
             adjusted_value = nutrient_value * (serving_size / 100)
-            output[key] = f"{round(adjusted_value, 2)} "
+            output[key] = f"{round(adjusted_value, 2)} {unit_value}"
     return output
     
     
@@ -87,7 +88,7 @@ def extract_nutrients(text):
                     elif group.lower()=='l':
                         value =1
                         print(nutrient , "value = ",value, unit)
-                    elif group in ['g', 'mg', 'mcg','mog','µg','ml']:
+                    elif group in ['g', 'mg', 'mcg','mog','µg','ml','kcal','scoop','katori','cup']:
                         unit = group
                         print(nutrient , "value = ",value, unit)
                     elif group in ['%']:

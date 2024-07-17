@@ -1,6 +1,7 @@
 nutrient_patterns={
-    "Serving Size":r'\(\s*(\d+(\.\d+)?)\s*(g|mg|ml)\s*\)|\(\s*(\d+(\.\d+)?)\s*\)|(serving\s*size)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg)',
-    "calories":r'(energy|calorie|calories)\s*(?:\(?\s*kcal\s*\)\s*?)?\s*(\d+\.\d+)(?:\s*kcal\s*)?',
+    "servingSize":r'\(\s*(\d+(\.\d+)?)\s*(g|mg|ml)\s*\)|\(\s*(\d+(\.\d+)?)\s*\)|(serving\s*size)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg)',
+    "servingUnit":r'(\d+)\s*(?:[a-z]*)?\s*(cup|scoop|katori|tablespoon)',
+    "calories":r'(energy|calorie|calories)\s*\(\s*(kcal)\s*\)\s*(\d+(\.\d+)?)|(energy|calorie|calories)\s*(\d+(\.\d+)?)\s*(kcal)?',
     "fat": r"(((total\s*)?fat|lipides?)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg|%)?|((total\s*)?fat|lipides?)\s*\((\s*g\s*|\s*mg\s*|\s*mcg\s*|\s*mog\s*|\s*µg\s*|%)\)\s*(\d+(\.\d+)?)?)",
     "saturatedFat": r"(saturated\s*(fat|fatty\s*acids)\s*<?\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg|%)?|saturated\s*(fat|fatty\s*acids)\s*\((\s*g\s*|\s*mg\s*|\s*mcg\s*|\s*mog\s*|\s*µg\s*|%)\)\s*(\d+(\.\d+)?)?|saturés?\s*\((\s*g\s*|\s*mg\s*|\s*mcg\s*|\s*mog\s*|\s*µg\s*|%)\)\s*(\d+(\.\d+)?)?|saturés?\s*<?\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg|%)?)",
     "polyUnsaturatedFat":r"(poly\s*unsaturated\s*(fat|fatty\s*acids)\s*<?\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg|%)?|poly\s*unsaturated\s*(fat|fatty\s*acids)\s*\((\s*g\s*|\s*mg\s*|\s*mcg\s*|\s*mog\s*|\s*µg\s*|%)\)\s*(\d+(\.\d+)?)?)",
@@ -29,7 +30,9 @@ nutrient_correction={
     "glucides":"carbs",
 }
 nutrients = [
-"Serving Size",
+"servingSize",
+"servingUnit",
+"calories",
 "fat",
 "saturatedFat",
 "polyUnsaturatedFat",
@@ -53,3 +56,8 @@ nutrients = [
 "calcium",
 "iron"
 ]
+ignore_content=[
+    "original_image_link",
+    "servingSize",
+    "servingUnit"
+    ]

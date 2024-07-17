@@ -1,4 +1,9 @@
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
+load_dotenv()
+hkConnectionString= os.getenv("HK_DB_STRING")
+# connection to this db requires ZTNA access but streamlit pe ZTNA ke saath its not working 
 
 def insert_to_db(data , database , collection):
     # Connect to MongoDB
