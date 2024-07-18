@@ -143,15 +143,19 @@ if st.button("Enter"):
                 if serving_size > 0:
                     output = adjust_nutrient_values(output, serving_size)
 
+            # Remove keys present in ignore_content
+            filtered_dict = {k: v for k, v in output.items() if k not in ignore_content}
+            filtered_df = pd.DataFrame([filtered_dict])
+            # output['healthType']=healthy_unhealthy(filtered_df)
+            output['healthType']=healthy_unhealthy(cleaned_text)
             # Convert the dictionary to a pandas DataFrame
             df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
-            
             # Display the extracted text
             st.write("Detected Nutrients:")
 
             # Display the DataFrame as a table using Streamlit 
             st.table(df)
-            st.write(f'This food is {healthy_unhealthy(cleaned_text)} for you')
+            # st.write(f'This food is {healthy_unhealthy(filtered_df)} for you')
             
             try:
                 skip_entry = all(value == "0.0 g" for value in output.values())
@@ -189,15 +193,18 @@ if st.button("Enter"):
                 if serving_size > 0:
                     output = adjust_nutrient_values(output, serving_size)
 
+            # Remove keys present in ignore_content
+            filtered_dict = {k: v for k, v in output.items() if k not in ignore_content}
+            filtered_df = pd.DataFrame([filtered_dict])
+            output['healthType']=healthy_unhealthy(cleaned_text)
             # Convert the dictionary to a pandas DataFrame
             df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
-            
             # Display the extracted text
             st.write("Detected Nutrients:")
 
             # Display the DataFrame as a table using Streamlit 
             st.table(df)
-            st.write(f'This food is {healthy_unhealthy(cleaned_text)} for you')
+            # st.write(f'This food is {output['healthType']} for you')
             
             try:
                 skip_entry = all(value == "0.0 g" for value in output.values())

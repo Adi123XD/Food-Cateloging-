@@ -10,6 +10,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string 
+import joblib
 load_dotenv()
 
 
@@ -17,10 +18,20 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-pro")
 
+# Step 1: Load the model from the pickle file
+# model = joblib.load(os.getenv("MODEL_PATH"))
+# print(type(model))
+
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-57eaebe5246c.json'
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-f5f83b608349.json'
 
 client = vision.ImageAnnotatorClient()
+
+def convert_to_float(value):
+    # Split the string by space and take the first part
+    numeric_value = value.split()[0]
+    return float(numeric_value)
+
 
 def healthy_unhealthy(ocr_text):
     prompt =f'''{ocr_text}
@@ -28,11 +39,18 @@ def healthy_unhealthy(ocr_text):
     is this food healthy or unhealthy? answer in a single word'''
     response = model.generate_content(prompt)
     return response.text
+    df=df[correct_order]
+    # Iterate over the DataFrame to clean the data
+    for column in df.columns:
+        df[column] = df[column].apply(convert_to_float)
+    prediction = model.predict(df)[0]
+    print(prediction)
+    return class_label[prediction]
 
 
 def adjust_nutrient_values(output,serving_size):
     for key, value in output.items():
-        if key not in ["original_image_link","servingSize","servingUnit"] and isinstance(value, str):
+        if key not in ["original_image_link","weight","servingUnit"] and isinstance(value, str):
             nutrient_value = float(value.split()[0])
             unit_value = value.split()[1]
             # unit_value =value.split()[1]

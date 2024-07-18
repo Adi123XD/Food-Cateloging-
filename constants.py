@@ -1,5 +1,5 @@
 nutrient_patterns={
-    "servingSize":r'\(\s*(\d+(\.\d+)?)\s*(g|mg|ml)\s*\)|\(\s*(\d+(\.\d+)?)\s*\)|(serving\s*size)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg)',
+    "weight":r'\(\s*(\d+(\.\d+)?)\s*(g|mg|ml)\s*\)|\(\s*(\d+(\.\d+)?)\s*\)|(serving\s*size)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg)',
     "servingUnit":r'(\d+)\s*(?:[a-z]*)?\s*(cup|scoop|katori|tablespoon)',
     "calories":r'(energy|calorie|calories)\s*\(\s*(kcal)\s*\)\s*(\d+(\.\d+)?)|(energy|calorie|calories)\s*(\d+(\.\d+)?)\s*(kcal)?',
     "fat": r"(((total\s*)?fat|lipides?)\s*(\d+(\.\d+)?)\s*(g|mg|mcg|mog|µg|%)?|((total\s*)?fat|lipides?)\s*\((\s*g\s*|\s*mg\s*|\s*mcg\s*|\s*mog\s*|\s*µg\s*|%)\)\s*(\d+(\.\d+)?)?)",
@@ -30,7 +30,7 @@ nutrient_correction={
     "glucides":"carbs",
 }
 nutrients = [
-"servingSize",
+"weight",
 "servingUnit",
 "calories",
 "fat",
@@ -58,6 +58,16 @@ nutrients = [
 ]
 ignore_content=[
     "original_image_link",
-    "servingSize",
+    "addedSugar",
+    "calories",
     "servingUnit"
-    ]
+]
+# order of the features used to build the model
+correct_order = [
+    "Cholesterol", "carbs", "fat", "fibre", "monoUnsaturatedFat",
+    "polyUnsaturatedFat", "protein", "transFat", "weight", "sugar",
+    "vitaminC", "vitaminE", "vitaminD", "vitaminK", "vitaminB6",
+    "vitaminA", "vitaminB12", "potassium", "calcium", "saturatedFat",
+    "sodium", "iron"
+]
+class_label = ["Unhealthy","Healthy"]
