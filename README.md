@@ -13,3 +13,9 @@ This application is designed to process images of food labels, extract nutrition
 - Google Cloud Vision API credentials
 - Google Generative AI API key
 - MongoDB for data storage
+### Installation
+1. Clone the repository:
+    ```
+    git https://github.com/Adi123XD/Food-Cateloging-.git
+    cd Food-Cateloging-
+   ```
