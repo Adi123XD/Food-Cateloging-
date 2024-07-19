@@ -138,15 +138,11 @@ if st.button("Enter"):
                 output = extract_nutrients(cleaned_text)
                 output["original_image_link"] = image_url_to_store  # Use the URL to store in the database
                 # Check for serving size and adjust nutrient values
-                serving_size_text = output.get("servingSize", "0.0 g")
+                serving_size_text = output.get("weight", "0.0 g")
                 serving_size = float(serving_size_text.split()[0])
                 if serving_size > 0:
                     output = adjust_nutrient_values(output, serving_size)
-
-            # Remove keys present in ignore_content
-            filtered_dict = {k: v for k, v in output.items() if k not in ignore_content}
-            filtered_df = pd.DataFrame([filtered_dict])
-            # output['healthType']=healthy_unhealthy(filtered_df)
+            output = format_data(output)
             output['healthType']=healthy_unhealthy(cleaned_text)
             # Convert the dictionary to a pandas DataFrame
             df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])
@@ -188,14 +184,12 @@ if st.button("Enter"):
                 output = extract_nutrients(cleaned_text)
                 output["original_image_link"] = image_url_to_store  # Use the URL to store in the database
                 # Check for serving size and adjust nutrient values
-                serving_size_text = output.get("servingSize", "0.0 g")
+                serving_size_text = output.get("weight", "0.0 g")
+                st.write(serving_size_text)
                 serving_size = float(serving_size_text.split()[0])
                 if serving_size > 0:
                     output = adjust_nutrient_values(output, serving_size)
-
-            # Remove keys present in ignore_content
-            filtered_dict = {k: v for k, v in output.items() if k not in ignore_content}
-            filtered_df = pd.DataFrame([filtered_dict])
+            output = format_data(output)
             output['healthType']=healthy_unhealthy(cleaned_text)
             # Convert the dictionary to a pandas DataFrame
             df = pd.DataFrame(list(output.items()), columns=['Nutrient', 'Value'])

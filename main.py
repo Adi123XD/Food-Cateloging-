@@ -10,6 +10,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string 
+from datetime import datetime, timedelta, timezone
 import joblib
 load_dotenv()
 
@@ -27,6 +28,60 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=r'healthkart-catelogging-f5f83b6083
 
 client = vision.ImageAnnotatorClient()
 
+def format_data(input_dict):
+    now = datetime.now(timezone.utc)
+    createDt = now.strftime("%Y-%m-%d %H:%M:%S")
+    createdAt = now
+    updateDt = (now + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M:%S")
+    updatedAt = (now + timedelta(hours=3))
+    output_dict = {
+    "Cholesterol": convert_to_float(input_dict["Cholesterol"]),
+    "addedSugar": str(input_dict["addedSugar"]),
+    "calories": convert_to_float(input_dict["calories"]),
+    "carbs": convert_to_float(input_dict["carbs"]),
+    "createDt": createDt,
+    "createdAt": createdAt,
+    "fat": convert_to_float(input_dict["fat"]),
+    "fibre": convert_to_float(input_dict["fibre"]),
+    "foodChoice": None,
+    "foodId": None,  # Placeholder
+    "foodName": None,  # Placeholder
+    "mealType": None,  # Placeholder
+    "minerals": {
+        "saturatedFat": convert_to_float(input_dict["saturatedFat"]),
+        "sodium": convert_to_float(input_dict["sodium"]),
+        "potassium":convert_to_float(input_dict['potassium']),
+        "calcium": convert_to_float(input_dict["calcium"]),
+        "iron": convert_to_float(input_dict["iron"]),
+        },
+    "monoUnsaturatedFat": convert_to_float(input_dict["monoUnsaturatedFat"]),
+    "omega": 0,
+    "polyUnsaturatedFat": convert_to_float(input_dict["polyUnsaturatedFat"]),
+    "protein": convert_to_float(input_dict["protein"]),
+    "servingSize": int(float(input_dict["servingUnit"].split()[0])),
+    "servingUnit": input_dict["servingUnit"].split()[1],
+    "servingUnitType": None,  # Placeholder
+    "status": "inactive",
+    "transFat": convert_to_float(input_dict["transFat"]),
+    "updateDt": updateDt,
+    "updatedAt": updatedAt,
+    "vitamins": {
+        "vitaminA": convert_to_float(input_dict["vitaminA"]),
+        "vitaminB6": convert_to_float(input_dict["vitaminB6"]),
+        "vitaminB12": convert_to_float(input_dict["vitaminB12"]),
+        "vitaminC": convert_to_float(input_dict["vitaminC"]),
+        "vitaminD": convert_to_float(input_dict["vitaminD"]),
+        "vitaminE": convert_to_float(input_dict["vitaminE"]),
+        "vitaminK": convert_to_float(input_dict["vitaminK"]),
+        },
+    "weight": convert_to_float(input_dict["weight"]),
+    "applicable_for_diet": True,
+    "include_in_diet_chat": False,
+    "sugar": convert_to_float(input_dict["sugar"]),
+    "image_link": input_dict["original_image_link"],
+    }
+    return output_dict
+    pass
 def convert_to_float(value):
     # Split the string by space and take the first part
     numeric_value = value.split()[0]
