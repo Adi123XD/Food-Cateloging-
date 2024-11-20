@@ -1,0 +1,12 @@
+start backend : 1. python app.py 
+                2. cloudflared tunnel --url backend url revieved from 1 
+    running these commands gives a https backend url 
+
+
+start front end :
+1. connect phone to laptop 
+    1. adb tcpip 5555
+    2. adb connect device ip:5555
+
+2. flutter run -d deviceip:5555
+(run this inside the frontend directory because we have the pubspec.yaml file present there only)
